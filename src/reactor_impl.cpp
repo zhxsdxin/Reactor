@@ -48,6 +48,8 @@ void ReactorImplementation::register_handler(HandlerPtr handler, uint32_t evt)
 // ==================== 移除 Handler ====================
 void ReactorImplementation::remove_handler(Handle handle)
 {
+    if (handle == INVALID_HANDLE) return;  // 防御：线程池可能传 -1 过来
+
     demux_->remove(handle);  // 先告诉底层多路分解器：别再盯着这个 fd 了
 
     {
@@ -59,6 +61,8 @@ void ReactorImplementation::remove_handler(Handle handle)
 // ==================== 修改 Handler 关心的事件 ====================
 void ReactorImplementation::modify_handler(Handle handle, uint32_t evt)
 {
+    if (handle == INVALID_HANDLE) return;  // 防御：线程池可能传 -1 过来
+
     {
         std::lock_guard<std::mutex> lock(mutex_);  // 加锁
         auto it = handlers_.find(handle);            // 在映射表中查找
