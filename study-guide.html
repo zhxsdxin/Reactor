@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Reactor 学习笔记 · 从零搞懂考核每个点</title>
+<style>
+  :root{--bg:#f8f9fa;--card:#fff;--accent:#d63384;--accent2:#0d6efd;--gold:#f0a500;--text:#212529;--muted:#6c757d;--code:#f1f3f5;--border:#dee2e6;--green:#198754;--orange:#fd7e14;--red:#dc3545;}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'PingFang SC','Microsoft YaHei','Noto Sans SC',sans-serif;background:var(--bg);color:var(--text);line-height:1.9;padding:20px}
+  .container{max-width:1060px;margin:0 auto}
+
+  h1{font-size:2em;color:var(--accent);text-align:center;padding:30px 0 8px;border-bottom:3px solid var(--accent);margin-bottom:8px}
+  .subtitle{text-align:center;color:var(--muted);font-size:.95em;margin-bottom:30px}
+
+  h2{font-size:1.45em;color:#333;margin:45px 0 16px;padding:8px 14px;background:#fff;border-left:4px solid var(--accent);border-radius:0 6px 6px 0;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  h3{font-size:1.15em;color:var(--accent2);margin:28px 0 10px;padding-left:6px;border-bottom:1px dashed var(--border)}
+  h4{font-size:1.02em;color:var(--orange);margin:18px 0 6px}
+
+  .card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:18px 24px;margin:14px 0;box-shadow:0 1px 4px rgba(0,0,0,.04)}
+  .card-sm{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px 18px;margin:8px 0}
+
+  .tip{background:#e8f5e9;border:1px solid #81c784;border-radius:8px;padding:14px 18px;margin:12px 0;font-size:.93em}
+  .warn{background:#fff3e0;border:1px solid #ffb74d;border-radius:8px;padding:14px 18px;margin:12px 0}
+  .danger{background:#ffebee;border:1px solid #ef9a9a;border-radius:8px;padding:14px 18px;margin:12px 0}
+  .qa{background:#e3f2fd;border:1px solid #90caf9;border-radius:8px;padding:14px 18px;margin:12px 0}
+  .qa .q{color:var(--accent2);font-weight:bold;margin-bottom:6px}
+  .qa .a{color:#333}
+
+  pre{background:var(--code);border:1px solid var(--border);border-radius:8px;padding:14px 18px;overflow-x:auto;font-family:'Cascadia Code','Consolas','Courier New',monospace;font-size:.84em;line-height:1.55;margin:8px 0;white-space:pre-wrap;word-break:break-all}
+  code{font-family:'Cascadia Code','Consolas','Courier New',monospace;font-size:.88em;background:#eee;padding:1px 5px;border-radius:3px}
+  pre code{background:transparent;padding:0}
+
+  table{width:100%;border-collapse:collapse;margin:12px 0;font-size:.92em}
+  th{background:#343a40;color:#fff;padding:9px 12px;text-align:left;font-weight:600}
+  td{padding:8px 12px;border-bottom:1px solid var(--border);vertical-align:top}
+  tr:nth-child(even) td{background:#f8f9fa}
+  tr:hover td{background:#e9ecef}
+
+  .hl{color:var(--accent);font-weight:bold}
+  .b{color:var(--accent2);font-weight:bold}
+  .g{color:var(--green)}
+  .o{color:var(--orange)}
+  .r{color:var(--red)}
+  .muted{color:var(--muted);font-size:.9em}
+
+  .flow-box{font-family:'Cascadia Code','Consolas',monospace;font-size:.8em;line-height:1.45;background:#f8f9fa;border:1px solid var(--border);border-left:5px solid var(--accent);border-radius:0 6px 6px 0;padding:18px 22px;margin:14px 0;overflow-x:auto}
+
+  .checklist{list-style:none;padding:0}
+  .checklist li{padding:6px 0 6px 28px;position:relative}
+  .checklist li::before{content:'✓ ';position:absolute;left:4px;color:var(--green);font-weight:bold}
+
+  .highlight-box{background:linear-gradient(135deg,#fff8e1,#fff3e0);border:2px solid var(--gold);border-radius:10px;padding:18px 22px;margin:16px 0}
+  .highlight-box h3{color:var(--gold);border-bottom-color:var(--gold)}
+
+  .nav{position:sticky;top:0;background:#fff;border-bottom:1px solid var(--border);padding:10px 0;margin-bottom:20px;z-index:10;display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.88em;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+  .nav a{color:var(--accent2);text-decoration:none;white-space:nowrap}
+  .nav a:hover{text-decoration:underline}
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>⚡ Reactor 高性能网络模型 · 学习笔记</h1>
+<p class="subtitle">把 PDF 考核要求、代码实现、为什么这么写 —— 全部理清楚</p>
+
+<nav class="nav">
+  <a href="#s1">考核全景</a>
+  <a href="#s2">核心概念</a>
+  <a href="#s3">逐文件讲解</a>
+  <a href="#s4">数据流追踪</a>
+  <a href="#s5">设计决策</a>
+  <a href="#s6">答辩FAQ</a>
+  <a href="#s7">运行演示</a>
+</nav>
+
+<!-- ============================================================ -->
+<!-- SECTION 1: 考核全景 -->
+<!-- ============================================================ -->
+<h2 id="s1">一、考核全景：PDF 要求 vs 我的代码</h2>
+
+<div class="card">
+<p>先把 PDF 考核要求一张表列清楚，右边标记代码里对应的地方：</p>
+
+<table>
+<tr>
+  <th style="width:5%">#</th>
+  <th style="width:25%">PDF 考核点</th>
+  <th style="width:12%">分类</th>
+  <th style="width:30%">代码位置</th>
+  <th style="width:28%">实现方式</th>
+</tr>
+
+<tr>
+  <td class="b">1</td>
+  <td><b>封装 epoll</b><br><span class="muted">addEvent / modifyEvent / removeEvent / waitEvents；少量 new；完整错误处理</span></td>
+  <td class="r">必做</td>
+  <td><code>epoll_demultiplexer.h/.cpp</code></td>
+  <td>epoll_create1 → regist/modify/remove 分别调 epoll_ctl(ADD/MOD/DEL)；wait_event 调 epoll_wait；evs_ 数组构造时一次分配 1024 个，反复复用</td>
+</tr>
+
+<tr>
+  <td class="b">2</td>
+  <td><b>Reactor 类</b><br><span class="muted">registerHandler / removeHandler / modifyHandler / eventLoop；fd→Handler 映射；正确分发四种回调</span></td>
+  <td class="r">必做</td>
+  <td><code>reactor.h/.cpp</code> + <code>reactor_impl.h/.cpp</code></td>
+  <td>Reactor 是单例外壳（pimpl 模式），ReactorImplementation 维护 map&lt;Handle, HandlerPtr&gt;；event_loop 里 while(is_running) → wait_and_dispatch → timer.tick</td>
+</tr>
+
+<tr>
+  <td class="b">3</td>
+  <td><b>Handler 抽象基类</b><br><span class="muted">四个纯虚函数；子类必须实现</span></td>
+  <td class="r">必做</td>
+  <td><code>event_handler.h</code></td>
+  <td>get_handle / handle_read / handle_write / handle_error / handle_close 全 = 0；EventType 用位掩码枚举表示可读|可写|错误等</td>
+</tr>
+
+<tr>
+  <td class="b">4</td>
+  <td><b>Acceptor（ListenHandler）</b><br><span class="muted">只负责 accept，新连接交给连接 Handler</span></td>
+  <td class="r">必做</td>
+  <td><code>listen_handler.h/.cpp</code></td>
+  <td>start() 里 socket→bind→listen→非阻塞；handle_read 里 while accept + 创建 SockHandler 并注册到 Reactor</td>
+</tr>
+
+<tr>
+  <td class="b">5</td>
+  <td><b>连接 Handler（Echo）</b><br><span class="muted">处理客户端读写，实现 Echo</span></td>
+  <td class="r">必做</td>
+  <td><code>sock_handler.h/.cpp</code></td>
+  <td>handle_read 读数据 → 线程池处理 → write_buffer_ 暂存 → handle_write 发送；1024 字节缓冲区</td>
+</tr>
+
+<tr>
+  <td class="b">6</td>
+  <td><b>EventDemultiplexer 抽象基类</b></td>
+  <td class="r">必做</td>
+  <td><code>event_demultiplexer.h</code></td>
+  <td>四个纯虚函数：wait_event / regist / remove / modify；ReadyEvent 结构体传就绪事件</td>
+</tr>
+
+<tr>
+  <td class="o">7</td>
+  <td><b>select 封装（切换）</b></td>
+  <td class="o">加分</td>
+  <td><code>select_demultiplexer.h/.cpp</code></td>
+  <td>三个 fd_set（read/write/except）+ select() + 遍历 0~max_fd_ 查就绪；条件编译 #ifdef USE_SELECT 切换</td>
+</tr>
+
+<tr>
+  <td class="o">8</td>
+  <td><b>多线程 / 主从 Reactor</b></td>
+  <td class="o">加分</td>
+  <td><code>thread_pool.h/.cpp</code> + <code>sock_handler.cpp</code></td>
+  <td>4 个工作线程 + 条件变量 + 任务队列；handle_read 只读数据，lambda 丢给线程池，线程池处理完通过 modify_handler 通知 Reactor 可写</td>
+</tr>
+
+<tr>
+  <td class="o">9</td>
+  <td><b>定时器</b></td>
+  <td class="o">加分</td>
+  <td><code>timer.h/.cpp</code> + <code>main.cpp</code></td>
+  <td>小顶堆（priority_queue+greater）；event_loop 每轮取堆顶的超时时间作为 epoll_wait 超时；tick() 触发到期回调</td>
+</tr>
+
+<tr>
+  <td class="b">10</td>
+  <td><b>构建文件</b></td>
+  <td class="r">提交</td>
+  <td><code>CMakeLists.txt</code></td>
+  <td>CMake 3.10 + C++17 + pthread 链接</td>
+</tr>
+</table>
+
+<p style="margin-top:12px"><b>评分占比：</b>功能完整度 50% + 代码质量 20% + 加分项 30% = 100%</p>
+</div>
+
+<div class="tip">
+<b>我的得分预估：</b><br>
+✅ 必做 6 项全部完成 → 拿满 50%<br>
+✅ 代码有清晰注释、合理的类拆分、防御式编程 → 代码质量至少 15%+<br>
+✅ 加分项：线程池 + select 切换 + 定时器 → 至少 20%+<br>
+<b>保守估计 85+ 分，三项加分都做了应该能冲 95+</b>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 2: 核心概念 -->
+<!-- ============================================================ -->
+<h2 id="s2">二、核心概念 · 大白话版</h2>
+
+<h3>2.1 什么是 Reactor？为什么不用"一个连接一个线程"？</h3>
+<div class="card">
+<p>传统的多线程服务器：<b>每来一个客户端连接，就 fork 一个线程去伺候它</b>。这个线程就一直阻塞在 <code>read()</code> 上等数据。1 万个连接 = 1 万个线程，上下文切换就能把 CPU 榨干。</p>
+<p>Reactor 的思路是：<b>一个线程管所有连接。</b>操作系统（epoll）帮我盯着所有 socket，哪个有动静了就告诉我，我去处理。就好比你是一个餐厅前台，不用给每个客人配一个服务员——你只需要盯着门口（epoll），谁举手（socket 可读）你才过去。</p>
+</div>
+
+<h3>2.2 epoll 到底比 select 强在哪？</h3>
+<div class="card">
+<table>
+<tr><th>对比维度</th><th>select</th><th>epoll</th></tr>
+<tr><td>fd 数量上限</td><td>默认 1024（FD_SETSIZE）</td><td>理论上无上限，只受系统内存限制</td></tr>
+<tr><td>查找就绪 fd</td><td><b>O(n) 遍历</b>所有 fd，不管有没有事件</td><td><b>O(1) 精确返回</b>就绪的 fd 列表</td></tr>
+<tr><td>注册机制</td><td>每次 select 都要把整个 fd_set 从用户态拷到内核态</td><td>epoll_ctl 一次注册，内核用红黑树维护，之后增量更新</td></tr>
+<tr><td>触发方式</td><td>只有水平触发（LT）</td><td>支持 LT 和 ET（边沿触发）</td></tr>
+</table>
+<p class="tip">打个比方：select 就像你去教室点名——不管学生到没到齐，你得把 50 个人名字全念一遍才知道谁没来。epoll 就像教室门上有个人脸识别——谁进来了、谁出去了，直接告诉你。</p>
+</div>
+
+<h3>2.3 Reactor 的四大角色</h3>
+<div class="card">
+<table>
+<tr><th>角色</th><th>比喻</th><th>在本项目里是谁</th></tr>
+<tr><td><b>Reactor</b></td><td>调度中心（总指挥）</td><td><code>Reactor</code> + <code>ReactorImplementation</code></td></tr>
+<tr><td><b>EventDemultiplexer</b></td><td>事件侦察兵（盯着内核的"眼睛"）</td><td><code>EpollDemultiplexer</code> 或 <code>SelectDemultiplexer</code></td></tr>
+<tr><td><b>EventHandler</b></td><td>具体干活的（服务员的行动手册）</td><td><code>ListenHandler</code>（门童）、<code>SockHandler</code>（服务员）</td></tr>
+<tr><td><b>Acceptor</b></td><td>接客的门童</td><td><code>ListenHandler</code> — 只负责 accept 新连接</td></tr>
+</table>
+</div>
+
+<h3>2.4 水平触发(LT) vs 边沿触发(ET)</h3>
+<div class="card">
+<p><b>水平触发 LT（默认）：</b>只要 socket 缓冲区还有数据没读完，epoll 就会反复通知你"可读"。好处是编程简单，不怕漏数据；坏处是可能多次触发。</p>
+<p><b>边沿触发 ET：</b>只在状态变化时通知一次（从"没数据"变为"有数据"）。好处是高效，只通知一次；坏处是你必须一次性把数据读完，不然就丢数据了。</p>
+<p class="tip">我代码里默认用 LT 模式，配合 while 循环 + 非阻塞 read，读到 EAGAIN 为止——这样 LT 也能达到 ET 的效果：一次通知读完所有数据。</p>
+</div>
+
+<h3>2.5 阻塞 I/O vs 非阻塞 I/O</h3>
+<div class="card">
+<p><b>阻塞 read：</b>如果 socket 没数据，<code>read()</code> 就卡住不动了，整个线程都等着。Reactor 模式下 = 自杀。</p>
+<p><b>非阻塞 read：</b>没数据时 <code>read()</code> 立刻返回 -1，errno = EAGAIN。你可以接着去处理其他 fd。核心代码就两行：<code>fcntl(fd, F_GETFL) → flags | O_NONBLOCK → fcntl(fd, F_SETFL)</code></p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 3: 逐文件讲解 -->
+<!-- ============================================================ -->
+<h2 id="s3">三、逐文件讲解（按"为什么要这么写"的思路）</h2>
+
+<h3>3.1 event_handler.h — 定规矩的"合同"</h3>
+<div class="card">
+<p><b>设计动机：</b>Reactor 模式的核心是"面向接口编程，不面向具体实现"。Reactor 只知道 EventHandler 这个抽象类型，不知道具体是 ListenHandler 还是 SockHandler。这样将来加一个 HttpHandler、WebSocketHandler，Reactor 代码一行不用改。</p>
+<pre><code>// 位掩码设计：用一个 uint32_t 表示多种事件的组合
+enum EventType : uint32_t {
+    EVENT_READABLE  = 0x01,   // 0000 0001
+    EVENT_WRITABLE  = 0x02,   // 0000 0010
+    EVENT_ERROR     = 0x04,   // 0000 0100
+};
+// "既要读又要写" = 0x01 | 0x02 = 0x03
+// 判断是否可读：events_ & EVENT_READABLE → 不为 0 就是可读</code></pre>
+<p class="tip"><b>为什么要用位掩码？</b>因为一个 fd 可能同时关心多种事件（比如既想读又想写）。如果用 enum 只能表示一种状态，用位掩码可以用一个整数表示任意组合。epoll 底层也是这么干的（EPOLLIN=0x001, EPOLLOUT=0x004）。</p>
+</div>
+
+<h3>3.2 event_demultiplexer.h — 多路分解的抽象</h3>
+<div class="card">
+<p><b>设计动机：</b>把"等待事件"这个操作抽象成接口，底层可以是 epoll 也可以是 select。切换只需改一行条件编译，Reactor 完全不用动。</p>
+<pre><code>struct ReadyEvent {
+    Handle handle;   // 哪个 fd 就绪了
+    uint32_t events; // 发生了什么事件（可读/可写/错误）
+};</code></pre>
+<p>wait_event 返回一个 vector&lt;ReadyEvent&gt;，不管底层是 epoll 还是 select，调用者看到的数据结构完全一样。</p>
+</div>
+
+<h3>3.3 epoll_demultiplexer.cpp — epoll 封装（核心）</h3>
+<div class="card">
+<p><b>关键实现细节：</b></p>
+<pre><code>// 构造函数：一次分配，反复使用（符合 PDF "不可滥用内存分配" 要求）
+EpollDemultiplexer::EpollDemultiplexer() : evs_(MAX_EVENTS) {
+    epoll_fd_ = epoll_create1(0);  // 创建一个 epoll 实例
+}
+
+// 事件类型转换：我们的事件 → epoll 的事件
+static uint32_t event_to_epoll(uint32_t evt) {
+    uint32_t ep = 0;
+    if (evt & EVENT_READABLE)  ep |= EPOLLIN;
+    if (evt & EVENT_WRITABLE)  ep |= EPOLLOUT;
+    if (evt & EVENT_ET)        ep |= EPOLLET;
+    return ep;
+}</code></pre>
+<p class="tip"><b>为什么要做类型转换？</b>用我们自己的 EventType 枚举而不是直接暴露 epoll 常量，这样换 select 时不用改上层代码。这是典型的"隔离变化"思想。select 那边也有对应的宏 FD_SET/FD_CLR。</p>
+</div>
+
+<h3>3.4 select_demultiplexer.cpp — select 封装（加分）</h3>
+<div class="card">
+<p><b>select 和 epoll 的核心区别体现在代码里：</b></p>
+<pre><code>// select 不告诉哪些 fd 就绪，得自己遍历
+for (Handle fd = 0; fd &lt;= max_fd_ && (int)ready_events.size() &lt; nfds; ++fd) {
+    if (FD_ISSET(fd, &read_fds))   evt |= EVENT_READABLE;
+    if (FD_ISSET(fd, &write_fds))  evt |= EVENT_WRITABLE;
+    // ...
+}</code></pre>
+<p>三个 fd_set（read_set_ / write_set_ / except_set_）+ FD_ZERO / FD_SET / FD_CLR 宏。注意 select 会修改传入的 fd_set，所以 wait_event 里必须用副本（第 19-21 行）。</p>
+<p class="warn"><b>remove 的特殊处理：</b>删掉一个 fd 后，如果它恰好是 max_fd_，需要往回找新的最大值（第 77-84 行）。不更新的话 select 会多扫描一堆空 fd，浪费 CPU。</p>
+</div>
+
+<h3>3.5 reactor_impl.cpp — 事件循环的心脏</h3>
+<div class="card">
+<p><b>wait_and_dispatch — 这是整个 Reactor 最核心的函数，只有 30 行：</b></p>
+<pre><code>int ReactorImplementation::wait_and_dispatch(int timeout_ms)
+{
+    // ① 等待事件（底层调 epoll_wait / select）
+    int n = demux_->wait_event(ready_events, timeout_ms);
+
+    // ② 遍历每一个就绪的 fd
+    for (const auto& re : ready_events) {
+        handler = handlers_[re.handle];   // fd → Handler 查表
+
+        // ③ 先处理错误/挂断（优先级最高）
+        if (re.events & (EVENT_ERROR | EVENT_HANGUP | EVENT_RDHUP)) {
+            handler->handle_error();
+            handler->handle_close();
+            continue;  // 出错了就不处理读写
+        }
+        // ④ 正常情况：读了写
+        if (re.events & EVENT_READABLE)   handler->handle_read();
+        if (re.events & EVENT_WRITABLE)   handler->handle_write();
+    }
+}</code></pre>
+<p class="tip"><b>关键设计决策——为什么要持锁查表、释放锁后再调回调？</b>因为 handle_read 里可能调用 remove_handler（客户端断开时），remove_handler 也要拿同一把互斥锁。如果持锁调回调 → 死锁。所以代码里用花括号限制锁的作用域：<code>{ lock_guard lock(mutex_); handler = handlers_[fd]; }</code> → 锁在这里释放 → 然后才调 handler->handle_read()。</p>
+</div>
+
+<h3>3.6 reactor.cpp — 单例 + 事件循环主循环</h3>
+<div class="card">
+<p><b>为什么 Reactor 要用单例？</b>一个进程里通常只有一个事件循环。不能让两个 Reactor 各自搞一个 epoll_wait，会乱套。</p>
+<pre><code>Reactor& Reactor::get_instance() {
+    static Reactor instance;  // C++11 保证线程安全，只构造一次
+    return instance;
+}</code></pre>
+<p><b>event_loop 的三件事（每一轮循环）：</b></p>
+<pre><code>while (is_running()) {
+    int timeout = timer_heap_->get_next_timeout_ms(); // ① 算超时
+    impl_->wait_and_dispatch(timeout);                // ② 等事件+分发
+    timer_heap_->tick();                              // ③ 触发到期定时器
+}</code></pre>
+<p class="tip"><b>超时时间的精妙之处：</b>epoll_wait 的超时取"最近一个定时器到期时间"和"默认 100ms"的最小值。这样既能保证定时器准时触发，又不会在没事件时空转。如果定时器比默认超时还远，就用默认超时——确保 loop 至少每 100ms 检查一次 running_ 标志，能及时响应 Ctrl+C。</p>
+</div>
+
+<h3>3.7 listen_handler.cpp — 门童（Acceptor）</h3>
+<div class="card">
+<p><b>start() 就是标准 TCP 服务端五步：</b></p>
+<pre><code>socket()     → 创建 socket，拿到 fd
+setsockopt   → SO_REUSEADDR，允许端口复用（防止重启时 "Address in use"）
+fcntl        → O_NONBLOCK，设为非阻塞
+bind()       → 绑定到 0.0.0.0:8080
+listen()     → 开始监听，SOMAXCONN 是内核允许的最大 backlog</code></pre>
+<p><b>handle_read 的精髓：while accept 到底</b></p>
+<pre><code>void ListenHandler::handle_read() {
+    while (true) {
+        int client_fd = accept(listen_fd_, ...);
+        if (client_fd &lt; 0) {
+            if (errno == EAGAIN || errno == EWOULDBLOCK) break; // 没新连接了
+            // 真正的错误...
+            break;
+        }
+        // 为新连接创建 Handler 并注册
+        auto sock = std::make_shared&lt;SockHandler&gt;(client_fd);
+        sock->set_nonblocking();
+        Reactor::get_instance().register_handler(sock, EVENT_READABLE);
+    }
+}</code></pre>
+<p class="tip"><b>为什么是 while accept？</b>和 handle_read 里 while read 同理。可能在 epoll 通知我们"监听 fd 可读"和实际执行 accept 之间，又有好几个新连接进来了。一次 accept 只取一个，剩下的会留在内核的 accept 队列里等下一次通知——多浪费一轮 epoll_wait。while accept 一次全取出来。</p>
+</div>
+
+<h3>3.8 sock_handler.cpp — Echo 服务员（最复杂的一个）</h3>
+<div class="card">
+<p>前面 index.html 里已经逐行拆解过了，这里讲关键的<b>四个设计决策</b>：</p>
+
+<h4>决策一：为什么 handle_read 要把数据交给线程池处理？</h4>
+<p>PDF 加分项要求："handleRead 只做数据读取，然后把数据交给线程池去做耗时处理"。</p>
+<p>虽然 Echo 的处理很简单（原样返回），但设计上留了这个口子——线程池的 lambda 里可以随便加逻辑（JSON 解析、加密解密、数据库查询），都不会阻塞 Reactor 主循环。这体现了 <b>IO 和业务处理分离</b>的思想。</p>
+
+<h4>决策二：为什么要用 shared_from_this？</h4>
+<pre><code>auto self = shared_from_this();
+Reactor::get_instance().get_thread_pool().submit(
+    [self, data = std::move(data)]() {
+        // self 保证了 SockHandler 在 lambda 执行期间不会被析构
+    });</code></pre>
+<p>线程池的 lambda 可能在未来任意时刻执行。如果客户端已经断开、SockHandler 已经被删了，lambda 里访问 self 就是野指针。shared_ptr 引用计数保证对象在 lambda 执行期间还活着。</p>
+
+<h4>决策三：读缓冲和写缓冲为什么设计不一样？</h4>
+<p>read_buffer_ — 固定大小 char[1024]，栈上分配，每次 read 覆盖写入。因为每次读的数据量不确定但最大 1024 字节。</p>
+<p>write_buffer_ — vector&lt;char&gt;，动态扩容。因为网络拥堵时可能要暂存多次读到的数据，暂时发不出去要堆积——固定大小就不够用了。</p>
+
+<h4>决策四：写完为什么要恢复只读？</h4>
+<pre><code>// 写完所有数据后
+Reactor::get_instance().modify_handler(sock_fd_, EVENT_READABLE);</code></pre>
+<p>如果不改回来，每次 epoll_wait 都会报"可写"（因为 socket 发送缓冲区一直有空间），导致 handle_write 被频繁空转调用——白白浪费 CPU。这就是 Reactor 里"动态修改关心事件"的典型用法。</p>
+</div>
+
+<h3>3.9 thread_pool.cpp — 线程池</h3>
+<div class="card">
+<p>经典的生产者-消费者模型：</p>
+<pre><code>// 生产者（Reactor 线程）
+pool.submit(task);       // 锁 → 入队 → 解锁 → notify_one()
+
+// 消费者（Worker 线程）
+cond_.wait(lock, []{ return !running_ || !tasks_.empty(); });
+task = tasks_.front(); tasks_.pop();
+lock.unlock();           // 执行前释放锁！
+task();                  // 不持锁执行
+</code></pre>
+<p class="tip"><b>为什么 task() 执行前要释放锁？</b>如果持锁执行任务，其他 worker 线程就取不到锁、没法从队列取任务，等于把多线程退化成单线程了。而且 task 里可能调 submit()（嵌套投递），持锁 + 再拿锁 = 死锁。</p>
+</div>
+
+<h3>3.10 timer.cpp — 定时器（小顶堆）</h3>
+<div class="card">
+<p>用 <code>std::priority_queue + std::greater</code> 实现，堆顶是最快到期的。</p>
+<pre><code>add_timer(5000, []{ printf("每5秒打印一次"); })  →  压入堆
+get_next_timeout_ms()  →  堆顶.deadline - now  →  作为 epoll_wait 超时
+tick()                 →  pop 所有到期的定时器并执行回调</code></pre>
+<p>main.cpp 里实现了一个"周期性定时器"的小技巧：回调里调 <code>add_periodic_timer()</code> 把自己重新注册，实现每 5 秒触发一次。</p>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 4: 数据流追踪 -->
+<!-- ============================================================ -->
+<h2 id="s4">四、数据流全过程追踪</h2>
+
+<div class="card">
+<p>下面从头到尾追一遍"客户端连上来、发 Hello、收到回显"的完整过程，每一步标注了在哪个文件的哪个函数：</p>
+
+<div class="flow-box">
+┌─────────────────────────────────────────────────────────────────┐
+│  <b>阶段 1：启动</b>                                                  │
+│                                                                 │
+│  main.cpp ─► Reactor::get_instance()  创建单例                   │
+│           ─► ListenHandler("0.0.0.0", 8080).start()             │
+│               ├─ socket() → bind() → listen() → 非阻塞           │
+│               └─ register_handler(this, EVENT_READABLE)         │
+│                   → handlers_[6] = ListenHandler                │
+│                   → epoll_ctl(ADD, fd=6, EPOLLIN)               │
+│           ─► add_periodic_timer()  添加 5 秒定时器               │
+│           ─► event_loop()  主循环开始                             │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  <b>阶段 2：新连接到来</b>                                            │
+│                                                                 │
+│  epoll_wait(tv=定时器超时)  ← 阻塞                                 │
+│       │                                                         │
+│  fd=6 可读！→ ReadyEvent{6, READABLE}                            │
+│       │                                                         │
+│  reactor_impl.cpp :: wait_and_dispatch()                        │
+│       ├─ handlers_[6] → ListenHandler                           │
+│       └─ handler->handle_read()                                 │
+│                                                                 │
+│  listen_handler.cpp :: handle_read()                            │
+│       ├─ while(accept()) → client_fd=7                          │
+│       ├─ new SockHandler(7) → set_nonblocking()                 │
+│       └─ register_handler(sock, EVENT_READABLE)                 │
+│            → handlers_[7] = SockHandler                         │
+│            → epoll_ctl(ADD, fd=7, EPOLLIN)                      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  <b>阶段 3：客户端发 "hello\n"</b>                                    │
+│                                                                 │
+│  epoll_wait → fd=7 可读！→ ReadyEvent{7, READABLE}               │
+│       │                                                         │
+│  reactor_impl.cpp :: wait_and_dispatch()                        │
+│       └─ handler->handle_read()                                 │
+│                                                                 │
+│  sock_handler.cpp :: handle_read()                              │
+│       ├─ while(read(fd=7, buf, 1024)) → 读到 6 字节 "hello\n"    │
+│       ├─ string data(buf, 6)     // 拷贝（buf 下次 read 会覆盖）   │
+│       ├─ auto self = shared_from_this()  // 防止 lambda 里析构   │
+│       └─ thread_pool.submit(lambda)                              │
+│            ┌──────────────────────────────┐                      │
+│            │ <b>线程池 Worker 线程：</b>         │                      │
+│            │ ① lock(write_mutex_)        │                      │
+│            │ ② write_buffer_ += data     │                      │
+│            │ ③ unlock                     │                      │
+│            │ ④ modify_handler(7, R|W)    │                      │
+│            │    → epoll_ctl(MOD,7,IN|OUT)│                      │
+│            └──────────────────────────────┘                      │
+└─────────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────────┐
+│  <b>阶段 4：回写数据给客户端</b>                                       │
+│                                                                 │
+│  epoll_wait → fd=7 可写！→ ReadyEvent{7, WRITABLE}               │
+│       │                                                         │
+│  reactor_impl.cpp :: wait_and_dispatch()                        │
+│       └─ handler->handle_write()                                │
+│                                                                 │
+│  sock_handler.cpp :: handle_write()                             │
+│       ├─ lock(write_mutex_)                                     │
+│       ├─ while(write(fd=7, "hello\n", 6)) → 成功发送 6 字节      │
+│       ├─ write_buffer_.erase(前6字节)                            │
+│       ├─ unlock                                                  │
+│       └─ modify_handler(7, EVENT_READABLE)  // 恢复只监听读      │
+│            → epoll_ctl(MOD, 7, EPOLLIN)                         │
+│                                                                 │
+│  客户端收到 "hello" ← Echo 完成！                                 │
+└─────────────────────────────────────────────────────────────────┘
+</div>
+</div>
+
+<div class="tip">
+<b>一句话总结整条链路：</b>
+epoll 通知 → Reactor 查表 → Handler 干活 → 线程池异步处理 → 修改事件 → 数据写回。<br>
+如果你面试/答辩时能把这条链路画出来，助教就知道你是真的懂了，不是抄的。
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 5: 设计决策 -->
+<!-- ============================================================ -->
+<h2 id="s5">五、关键设计决策和"为什么"</h2>
+
+<div class="card">
+<table>
+<tr><th style="width:22%">设计决策</th><th style="width:28%">怎么做的</th><th>为什么这么做</th></tr>
+
+<tr>
+  <td><b>单例 Reactor</b></td>
+  <td><code>static Reactor instance;</code><br>C++11 局部静态变量</td>
+  <td>一个进程只需要一个事件循环。两个 Reactor 各管各的 epoll → 事件可能丢给错误的循环 → 乱套。C++11 保证多线程环境下只构造一次。</td>
+</tr>
+
+<tr>
+  <td><b>pimpl 模式</b></td>
+  <td>Reactor 只暴露接口，具体实现在 ReactorImplementation 里</td>
+  <td>接口和实现分离。如果要加新功能（比如多 epoll 实例），改 ReactorImplementation 就行，Reactor 接口不用动。</td>
+</tr>
+
+<tr>
+  <td><b>条件编译切换 epoll/select</b></td>
+  <td><code>#ifdef USE_SELECT ... #else ... #endif</code></td>
+  <td>PDF 要求"使用 epoll"，但 select 作为加分项。两者实现同一个接口，上层代码完全不用改。</td>
+</tr>
+
+<tr>
+  <td><b>while 循环读到 EAGAIN</b></td>
+  <td>handle_read 里 while(true){ read()... if EAGAIN break }</td>
+  <td>LT 模式下，不一次读完就会反复触发 epoll_wait。一次读到底，减少系统调用次数。</td>
+</tr>
+
+<tr>
+  <td><b>非阻塞 socket</b></td>
+  <td><code>fcntl(fd, F_SETFL, flags | O_NONBLOCK)</code></td>
+  <td>阻塞 read 会卡住整个线程。Reactor 的一个线程管所有连接 = 绝对不能有任何地方阻塞。</td>
+</tr>
+
+<tr>
+  <td><b>智能指针管理生命周期</b></td>
+  <td><code>shared_ptr</code> + <code>shared_from_this</code></td>
+  <td>避免手动 delete 导致的内存泄漏或野指针。线程池的 lambda 持有 shared_ptr，保证对象在异步执行期间不被销毁。</td>
+</tr>
+
+<tr>
+  <td><b>锁的作用域最小化</b></td>
+  <td><code>{ lock_guard lock(m); ... }</code><br>锁在花括号结束时释放</td>
+  <td>持锁调用回调 = 死锁风险。锁只保护数据结构（map、vector），不保护业务逻辑。</td>
+</tr>
+
+<tr>
+  <td><b>写完后恢复只读</b></td>
+  <td><code>modify_handler(fd, READABLE)</code></td>
+  <td>否则每次 epoll_wait 都报可写（空转）。只在真正有数据要发的时候才注册可写事件。</td>
+</tr>
+
+<tr>
+  <td><b>定时器超时联动 epoll_wait</b></td>
+  <td><code>timeout = min(定时器超时, 默认100ms)</code></td>
+  <td>既不空转 CPU（没事件时不忙等），又能准时触发定时器，还能及时响应 Ctrl+C。</td>
+</tr>
+</table>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 6: 答辩FAQ -->
+<!-- ============================================================ -->
+<h2 id="s6">六、答辩 / 助教常问 FAQ（重点看！）</h2>
+
+<div class="highlight-box">
+<h3>这些问题是助教最可能问的，提前想好怎么回答</h3>
+</div>
+
+<div class="qa">
+<div class="q">Q1: Reactor 和 Proactor 的区别是什么？</div>
+<div class="a">
+<b>答：</b>Reactor 是<b>同步非阻塞 I/O</b>——内核通知你"可读了"，你自己调 read() 去读数据。Proactor 是<b>异步 I/O</b>——你告诉内核"帮我读"，内核读完了通知你"数据在这"。<br>
+打个比方：Reactor 是快递员打电话说"快递到楼下了，下来拿"；Proactor 是快递员直接放到你家门口说"到了"。<br>
+Linux 主流用 Reactor + epoll，Windows 主流用 Proactor + IOCP（我们后来的远控项目会用到）。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q2: 为什么 epoll 比 select 快？</div>
+<div class="a">
+<b>答：</b>三个原因：<br>
+① <b>fd 数量</b>：select 硬上限 1024，epoll 理论上无上限；<br>
+② <b>查找就绪</b>：select 需要 O(n) 遍历所有 fd，epoll 直接 O(1) 返回就绪 fd 列表（存在内核的红黑树 + 就绪链表里）；<br>
+③ <b>注册开销</b>：select 每次调用都要把整个 fd_set 拷进内核，epoll 只需注册一次（epoll_ctl），内核记住后用事件通知；<br>
+④ <b>数据结构</b>：epoll 内核用红黑树存所有注册的 fd，用双向链表存就绪的 fd。插入/删除/查找都是 O(log n)。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q3: ET 和 LT 有什么区别？你的代码为什么用 LT？</div>
+<div class="a">
+<b>答：</b>LT（水平触发）：只要数据没读完就一直通知；ET（边沿触发）：只在"没数据→有数据"时通知一次。<br>
+我用 LT 是因为编程更安全——不容易漏数据。但用 while 循环读到 EAGAIN 为止，效果和 ET 一样（一次通知读完所有数据）。代码里 EventType 枚举留了 EVENT_ET=0x20 的标志位，传给 epoll 时加上 EPOLLET 就能切 ET 模式。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q4: handle_read 里为什么要把数据交给线程池而不是直接处理？</div>
+<div class="a">
+<b>答：</b>这是 PDF 加分项要求的"handleRead 只做数据读取，然后把数据交给线程池去做耗时处理"。<br>
+核心思想是<b>IO 和业务处理分离</b>：Reactor 线程（IO 线程）只负责快速读写 socket，耗时操作（JSON 解析、数据库查询等）丢给线程池异步执行。这样 IO 线程不会被阻塞，能保持对其他连接的高响应性。<br>
+具体实现：handle_read 读数据 → 投递 lambda 到线程池 → handle_read 返回（耗时约几微秒）。线程池 Worker 处理完 → modify_handler 通知 Reactor "可以写了" → 下次 epoll 触发 handle_write。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q5: 线程池怎么保证线程安全？</div>
+<div class="a">
+<b>答：</b>三处需要加锁：<br>
+① <b>任务队列</b>（thread_pool.cpp）：mutex + condition_variable，生产者和多个消费者之间互斥；<br>
+② <b>写缓冲区</b>（sock_handler.cpp）：write_mutex_，因为线程池 Worker 和 Reactor 线程可能同时操作 write_buffer_；<br>
+③ <b>Handler 映射表</b>（reactor_impl.cpp）：mutex_，因为 register_handler 和 wait_and_dispatch 在不同线程可能同时访问。<br>
+特别注意：锁只保护数据结构，回调函数在释放锁之后执行——避免持锁调回调导致的死锁。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q6: 你这里用的是单 Reactor 还是主从 Reactor？</div>
+<div class="a">
+<b>答：</b>我实现的是<b>单 Reactor + 线程池</b>模式。一个 Reactor 线程负责所有 IO（accept + 读写），4 个工作线程负责业务处理。<br>
+如果要升级成主从 Reactor：主 Reactor 只处理 listen fd（accept），从 Reactor（多个）各自管理一部分连接的读写。这样可以利用多核 CPU 并行处理 IO，适合更高并发的场景。这也是 Netty / Nginx 等生产级框架的做法。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q7: 定时器是怎么和事件循环联动的？</div>
+<div class="a">
+<b>答：</b>小顶堆（priority_queue）的堆顶是最快到期的定时器。每一轮事件循环：<br>
+① <code>get_next_timeout_ms()</code> 算堆顶还有多久到期；<br>
+② 取 min(定时器超时, 默认 100ms) 作为 epoll_wait 的超时参数；<br>
+③ epoll_wait 返回后（可能是超时返回，也可能是事件到达），调用 <code>tick()</code> 检查并执行所有到期的定时器。<br>
+这样定时器不会错过（超时 <= 最早定时器），也不会空转 CPU（没事件时最多等 100ms）。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q8: 如果客户端发送的数据超过 1024 字节怎么办？</div>
+<div class="a">
+<b>答：</b>因为用的是水平触发 + while 循环读完，多次 read 会拼接。但当前 Echo 实现每次 read 到数据就单独处理（丢线程池 → 写回）。如果一帧数据超过 1024 字节会被拆成多次 handle_read 调用，每次独立 echo 回去。<br>
+正确的做法是在应用层做"粘包/拆包"处理：读到的数据先放缓冲区，按协议边界（如长度前缀、分隔符）来拆分消息帧。这在生产级代码里是必须的，但我这个 Demo 没做——因为考核重点是 Reactor 架构，不是协议设计。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q9: 为什么 listen fd 和 client fd 都要设非阻塞？</div>
+<div class="a">
+<b>答：</b>listen fd 设非阻塞是因为：在极少数情况下（如连接在 accept 前被 RST 重置），即便是 select/epoll 说可读，accept 也可能阻塞。设非阻塞后 accept 返回 EAGAIN，我们 while 循环里 break 就好。<br>
+client fd 设非阻塞是必须的：否则 read 没数据时整个线程卡住，其他 9999 个连接全部无法处理。
+</div>
+</div>
+
+<div class="qa">
+<div class="q">Q10: 代码里用了哪些 C++17 特性？</div>
+<div class="a">
+<b>答：</b>① <code>std::make_unique</code>（C++14 开始有，C++17 更成熟）管理 exclusive ownership；<br>
+② lambda 表达式 + 移动捕获（<code>[data = std::move(data)]</code>）避免不必要拷贝；<br>
+③ <code>auto</code> 类型推导简化代码；<br>
+④ <code>std::chrono</code> 用于定时器的精确计时；<br>
+⑤ <code>std::atomic</code> 用于线程安全的标志位；<br>
+⑥ <code>= default</code> / <code>= delete</code> 显式声明特殊成员函数。
+</div>
+</div>
+
+<!-- ============================================================ -->
+<!-- SECTION 7: 运行演示 -->
+<!-- ============================================================ -->
+<h2 id="s7">七、编译运行 & 演示要点</h2>
+
+<div class="card">
+<h3>在 Linux / WSL 上编译运行</h3>
+<pre><code># 一行编译（不需要 CMake）：
+g++ -std=c++17 -o server src/*.cpp -Iinclude -lpthread
+
+# 启动服务器：
+./server 8080
+
+# 另开终端测试：
+nc localhost 8080
+# 输入 hello → 回车 → 看到 hello 回显 → 成功了！
+
+# 并发演示（10 个客户端）：
+bash demo.sh
+# 期望看到 10 行 [✓] 客户端 #N: 发送=接收 → 正确</code></pre>
+</div>
+
+<div class="card">
+<h3>给助教演示时怎么说（台词建议）</h3>
+<pre><code>1. 先展示编译：g++ ... → 无错误无警告（-Wall -Wextra）
+2. ./server 8080 → 看到 Reactor 启动日志（epoll 模式）
+3. 开 2-3 个终端各 nc localhost 8080 → 各自输入，各自回显
+4. bash demo.sh → 10 并发回显全通过
+5. Ctrl+C → 看到 "[main] shutting down..." 优雅退出
+
+过程中指着日志解释：
+- "[ListenHandler] listening on 0.0.0.0:8080, fd=6" ← 监听socket注册成功
+- "[ListenHandler] new connection fd=7" ← accept了新连接
+- "[SockHandler] fd=7 read 6 bytes" ← 读到了客户端数据
+- "[timer] server is running..." ← 定时器每5秒触发一次
+</code></pre>
+</div>
+
+<!-- ============================================================ -->
+<!-- 结束语 -->
+<!-- ============================================================ -->
+<div class="tip" style="font-size:1.05em;text-align:center;margin-top:30px">
+<b>记住这句"咒语"，面试/答辩 100% 能用上：</b><br><br>
+<span style="font-size:1.1em">"epoll 通知 → Reactor 查表 → Handler 干活 → 线程池异步处理 → 事件状态翻转 → 数据写回"</span><br><br>
+把这六个步骤在白板上画一遍，指着代码说，助教会觉得你真的懂了。<br>
+不是因为代码写得多花哨，而是<b>你知道每一行为什么这么写。</b>
+</div>
+
+<p style="text-align:center;color:var(--muted);margin:40px 0 20px;font-size:.9em">
+—— 学习笔记，写完于 2026.08.09 ——
+</p>
+
+</div>
+</body>
+</html>
