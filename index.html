@@ -505,6 +505,40 @@ nc localhost 8080          <span class="muted"># 输入任意文字，看回显<
 Ctrl+C                      <span class="muted"># 停止服务器</span></pre>
 </div>
 
+<h3 id="wsl">Windows 上用 WSL 跑</h3>
+<div class="warn">
+<b>项目源码用了 epoll，只能在 Linux 环境编译。</b>Windows 下请用 WSL2（Linux 子系统），一次装好，之后都能用。
+</div>
+
+<div class="card">
+<i>① 装 WSL</i>（以管理员身份打开 PowerShell）：
+<pre>wsl --install</pre>
+装完重启电脑，首次打开 Ubuntu 会要求设置用户名/密码。
+
+<i>② 进 Ubuntu 装编译工具：</i>
+<pre>sudo apt update
+sudo apt install -y g++ netcat-openbsd</pre>
+
+<i>③ 直接进入项目所在目录跑演示（wsl 能访问你的 Windows 盘）：</i>
+<pre><span class="muted"># 项目在 C:\Users\v_shinzhang\Downloads\Reactor</span>
+cd /mnt/c/Users/v_shinzhang/Downloads/Reactor
+bash demo.sh</pre>
+</div>
+
+<h3 id="h3">10 客户端并发演示</h3>
+<div class="card">
+项目根目录的 <code>demo.sh</code> 一键执行完整演示：
+<pre><span class="muted"># 脚本分四步：编译 → 启动服务器 → 起 10 个客户端并发 → 停服务器</span>
+bash demo.sh
+
+<span class="muted"># 期望输出：每一行都是 ✓（发送=接收回显）</span>
+[✓] 客户端 #1: 发送=接收 → 正确
+[✓] 客户端 #2: 发送=接收 → 正确
+<span class="muted">...（共 10 行）</span></pre>
+
+<p style="margin-top:8px">也可以在脚本末尾加 <code>sleep 3</code> 让服务器多运行一会儿，方便你截图服务器日志。</p>
+</div>
+
 <div class="tip" style="text-align:center;margin-top:30px;font-size:1.1em">
 <b>记住一句话就够了：</b><br>
 epoll 通知 → Reactor 查表 → Handler 干活 → 线程池处理 → 写回去。<br>
